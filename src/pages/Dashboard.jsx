@@ -5,6 +5,7 @@ import MatchCard from "../components/MatchCard";
 import { COLORS } from "../../utils/colors";
 import { Heart, Sparkles, Star, Flower2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 export default function Dashboard() {
   const [profiles, setProfiles] = useState([]);
@@ -410,9 +411,9 @@ export default function Dashboard() {
 
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>
-                  <a href="/" className="hover:text-pink-500 transition">
+                  <Link to="/" className="hover:text-pink-500 transition">
                     Home
-                  </a>
+                  </Link>
                 </li>
 
                 <li>
@@ -437,47 +438,83 @@ export default function Dashboard() {
 
             {/* SUPPORT */}
             <div>
-              <h3 className="font-semibold text-gray-800 mb-3">Support</h3>
+              <h3 className="font-semibold text-gray-800 mb-3">Quick Links</h3>
 
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>
-                  <a
-                    href="/email-support"
-                    className="hover:text-pink-500 transition"
-                  >
-                    Email Support
-                  </a>
+                  <Link to="/" className="hover:text-pink-500 transition">
+                    Home
+                  </Link>
                 </li>
 
                 <li>
-                  <a
-                    href="/help-center"
+                  <Link
+                    to="/matches"
                     className="hover:text-pink-500 transition"
                   >
-                    Help Center
-                  </a>
+                    Matches
+                  </Link>
                 </li>
 
                 <li>
-                  <a
-                    href="/privacy-policy"
-                    className="hover:text-pink-500 transition"
-                  >
-                    Privacy Policy
-                  </a>
+                  <Link to="/plans" className="hover:text-pink-500 transition">
+                    Plans
+                  </Link>
                 </li>
 
                 <li>
-                  <a
-                    href="/terms-conditions"
+                  <Link
+                    to="/profile"
                     className="hover:text-pink-500 transition"
                   >
-                    Terms & Conditions
-                  </a>
+                    Profile
+                  </Link>
                 </li>
               </ul>
             </div>
 
+            {/* SUPPORT */}
+            <div>
+              <h3 className="font-semibold text-gray-800 mb-3">Support</h3>
+
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li>
+                  <Link
+                    to="/email-support"
+                    className="hover:text-pink-500 transition"
+                  >
+                    Email Support
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    to="/help-center"
+                    className="hover:text-pink-500 transition"
+                  >
+                    Help Center
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    to="/privacy-policy"
+                    className="hover:text-pink-500 transition"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    to="/terms-conditions"
+                    className="hover:text-pink-500 transition"
+                  >
+                    Terms & Conditions
+                  </Link>
+                </li>
+              </ul>
+            </div>
             {/* CONTACT */}
             <div>
               <h3 className="font-semibold text-gray-800 mb-3">Contact</h3>
