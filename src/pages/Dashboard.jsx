@@ -395,11 +395,12 @@ export default function Dashboard() {
               <h2
                 className={`text-2xl font-bold bg-gradient-to-r ${COLORS.primary} bg-clip-text text-transparent`}
               >
-                Company Name
+                Skiez Digital
               </h2>
 
               <p className="text-gray-600 mt-3 text-sm leading-6">
-                Your company address here.
+                India: No: 81/5, 6th street, Shanthi Nagar, Chengalpattu
+                District, Tamilnadu 603 003.
               </p>
             </div>
 
