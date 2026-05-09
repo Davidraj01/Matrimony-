@@ -137,10 +137,10 @@ export default function MatchCard({ user, matchPercent = 75 }) {
 
         <img
           src={
-            user?.profilePic && user.profilePic.trim() !== ""
-              ? user.profilePic
-              : user?.photos?.[0] && user.photos[0].trim() !== ""
-                ? user.photos[0]
+            user?.profilePic
+              ? `${import.meta.env.VITE_API_URL}${user.profilePic}`
+              : user?.photos?.[0]
+                ? `${import.meta.env.VITE_API_URL}${user.photos[0]}`
                 : "/profile_avatar.png"
           }
           alt="profile"
