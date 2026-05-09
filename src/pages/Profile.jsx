@@ -34,18 +34,13 @@ export default function Profile() {
 
   const fetchPlan = async () => {
     try {
-      const res = await fetch("/api/plan/me", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      const data = await res.json();
+      const data = await getMyPlan();
       setPlan(data.subscription || "free");
     } catch {
       console.log("Plan fetch error");
     }
   };
+
   const fetchProfile = async () => {
     try {
       const data = await getMyProfile();
