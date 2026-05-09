@@ -5,6 +5,7 @@ import {
   uploadPhotos,
   deletePhoto,
   setProfilePic,
+  getMyPlan,
 } from "../services/profileApi";
 import toast from "react-hot-toast";
 
