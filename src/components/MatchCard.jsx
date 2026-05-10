@@ -107,7 +107,7 @@ export default function MatchCard({ user, matchPercent = 75 }) {
   };
   // CHAT
   const handleChat = async () => {
-    const id = user?.userId?._id;
+    const id = user?.userId?._id || user?._id;
 
     try {
       if (userPlan !== "premium") {
@@ -117,7 +117,9 @@ export default function MatchCard({ user, matchPercent = 75 }) {
       }
 
       navigate(`/chat/${id}`, {
-        state: { name: user.userId?.name || "User" },
+        state: {
+          name: user?.userId?.name || user?.name || "User",
+        },
       });
     } catch {
       toast.error("Something went wrong");
