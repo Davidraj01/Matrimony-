@@ -9,12 +9,8 @@ export default function MatchCard({ user, matchPercent = 75 }) {
 
   const [sent, setSent] = useState(user?.isInterestSent || false);
   const [loading, setLoading] = useState(false);
-  const [userPlan, setUserPlan] = useState(null);
   const [shortlisted, setShortlisted] = useState(false);
-
-  useEffect(() => {
-    fetchPlan();
-  }, []);
+  const [userPlan] = useState(localStorage.getItem("plan") || "free");
 
   useEffect(() => {
     checkShortlist();
@@ -31,15 +27,6 @@ export default function MatchCard({ user, matchPercent = 75 }) {
       setShortlisted(exists);
     } catch (err) {
       console.log("Shortlist fetch error", err);
-    }
-  };
-
-  const fetchPlan = async () => {
-    try {
-      const res = await API.get("/plan/me");
-      setUserPlan(res.data.subscription);
-    } catch {
-      console.log("Plan fetch error");
     }
   };
 
