@@ -43,6 +43,7 @@ export default function Register() {
       if (msg === "User exists") {
         toast.error("Email already registered. Try login.");
       } else {
+        console.log(err.response?.data);
         toast.error(msg || "Registration failed");
       }
     } finally {
@@ -147,7 +148,10 @@ export default function Register() {
                 icon={<Lock size={18} />}
                 error={errors.confirmPassword}
                 rightIcon={
-                  <button onClick={() => setShowConfirm(!showConfirm)}>
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                  >
                     {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 }
