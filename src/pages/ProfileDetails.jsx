@@ -50,7 +50,13 @@ export default function ProfileDetails() {
   };
 
   if (!profile) return <p className="p-4">Loading...</p>;
+  const imageUrl = (path) => {
+    if (!path) return "https://via.placeholder.com/300";
 
+    const cleanPath = path.replace(/^\/+/, "");
+
+    return `https://matrimony-server-ungl.onrender.com/${cleanPath}`;
+  };
   return (
     <div className="p-4 max-w-5xl mx-auto">
       {/* PROFILE CARD */}
@@ -59,11 +65,7 @@ export default function ProfileDetails() {
         <div className="flex flex-col md:flex-row gap-6">
           {/* IMAGE */}
           <img
-            src={
-              profile?.profilePic ||
-              profile?.photos?.[0] ||
-              "https://via.placeholder.com/300"
-            }
+            src={imageUrl(profile?.profilePic || profile?.photos?.[0])}
             alt="profile"
             className="w-full md:w-64 h-72 object-cover rounded-lg"
           />
@@ -224,7 +226,7 @@ export default function ProfileDetails() {
               {profile.photos.map((p, i) => (
                 <img
                   key={i}
-                  src={p}
+                  src={imageUrl(p)}
                   alt="photo"
                   className="w-full aspect-square object-cover rounded-lg hover:scale-105 transition duration-300"
                 />
