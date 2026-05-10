@@ -83,7 +83,9 @@ export default function MatchCard({ user, matchPercent = 75 }) {
     try {
       setLoading(true);
 
-      const res = await sendInterest(user.userId._id);
+      const receiverId = user?.userId?._id || user?._id;
+
+      const res = await sendInterest(receiverId);
 
       if (res?.alreadySent) {
         setSent(true);
@@ -98,7 +100,6 @@ export default function MatchCard({ user, matchPercent = 75 }) {
       setLoading(false);
     }
   };
-
   // CHAT
   const handleChat = async () => {
     const id = user?.userId?._id;
