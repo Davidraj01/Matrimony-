@@ -131,6 +131,14 @@ export default function Profile() {
     return Math.round((filled / fields.length) * 100);
   };
 
+  const imageUrl = (path) => {
+    if (!path) return "/profile_avatar.png";
+
+    const cleanPath = path.replace(/^\/+/, "");
+
+    return `https://matrimony-server-ungl.onrender.com/${cleanPath}`;
+  };
+
   if (loading)
     return <div className="p-6 flex justify-center mt-10">Loading...</div>;
   if (!profile) return null;
@@ -141,13 +149,10 @@ export default function Profile() {
       <div className="bg-gradient-to-r from-pink-600 to-rose-500 text-white p-4 md:p-6 rounded-xl flex flex-col sm:flex-row gap-4 justify-between items-center overflow-hidden">
         <div className="flex flex-row gap-4 items-center w-full sm:w-auto min-w-0">
           <img
-            src={
-              profile?.profilePic
-                ? `https://matrimony-server-ungl.onrender.com/uploads/${profile.profilePic
-                    .replace("/uploads/", "")
-                    .replace("uploads/", "")}`
-                : "/profile_avatar.png"
-            }
+            src={imageUrl(profile?.profilePic)}
+            onError={(e) => {
+              e.target.src = "/profile_avatar.png";
+            }}
             alt="Profile"
             className="w-16 h-16 md:w-24 md:h-24 rounded-full border-4 border-white/30 object-cover bg-gray-200 shadow-lg shrink-0"
           />
@@ -392,9 +397,10 @@ export default function Profile() {
               {profile.photos?.map((img, i) => (
                 <div key={i} className="relative aspect-square">
                   <img
-                    src={`https://matrimony-server-ungl.onrender.com/uploads/${img
-                      .replace("/uploads/", "")
-                      .replace("uploads/", "")}`}
+                    src={imageUrl(img)}
+                    onError={(e) => {
+                      e.target.src = "/profile_avatar.png";
+                    }}
                     className="w-full h-full object-cover rounded-lg"
                   />
 
