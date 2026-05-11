@@ -96,7 +96,7 @@ export default function Sidebar() {
     <>
       {/* 🔥 MOBILE TOP BAR */}
       <div className="md:hidden fixed top-0 left-0 right-0 bg-white shadow flex items-center justify-between px-4 py-3 z-50">
-        <h2 className="font-bold text-pink-500">❤️Royal Matrimony</h2>
+        <h2 className="font-bold text-pink-500">❤️ Royal Matrimony</h2>
 
         <button onClick={() => setOpen(true)}>
           <Menu />
@@ -117,7 +117,7 @@ export default function Sidebar() {
         ${open ? "translate-x-0" : "-translate-x-full"} md:hidden`}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-bold text-pink-500">❤️ MatchNext</h2>
+          <h2 className="text-lg font-bold text-pink-500">❤️Royal Matrimony</h2>
 
           <button onClick={() => setOpen(false)}>
             <X />
@@ -154,7 +154,7 @@ export default function Sidebar() {
       {/* 🔥 DESKTOP SIDEBAR (UNCHANGED) */}
       <div className="hidden md:flex flex-col w-64 fixed left-0 top-0 h-screen bg-white p-4 border-r shadow-sm">
         <h2 className="text-xl font-bold text-pink-500 mb-6">
-          ❤️ MatchNext Matrimony
+          ❤️Royal Matrimony
         </h2>
 
         <nav className="flex flex-col gap-2 text-sm">
