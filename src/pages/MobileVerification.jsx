@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import API from "../services/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
 export default function MobileVerification() {
@@ -12,50 +12,40 @@ export default function MobileVerification() {
 
   const inputsRef = useRef([]);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // ✅ Extract intent globally
+  const isReset = searchParams.get("reset") === "true";
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const isReset = params.get("reset");
-
     const isVerified = localStorage.getItem("isVerified");
-
-    // ✅ Only redirect if NOT reset password flow
-    if (isVerified === "true" && isReset !== "true") {
+    // ✅ Only force redirect to dashboard if NOT in reset flow
+    if (isVerified === "true" && !isReset) {
       navigate("/dashboard");
     }
-  }, []);
-  // =========================================
-  // ⏳ TIMER
-  // =========================================
+  }, [isReset, navigate]);
+
   useEffect(() => {
     if (timer <= 0) return;
-
-    const interval = setInterval(() => {
-      setTimer((prev) => prev - 1);
-    }, 1000);
-
+    const interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
     return () => clearInterval(interval);
   }, [timer]);
 
-  // =========================================
-  // 📩 SEND OTP
-  // =========================================
   const handleSendOTP = async () => {
-    // ✅ VALIDATION
     if (!phone || phone.length !== 10) {
-      return toast.error("Enter valid phone number");
+      return toast.error("Enter a valid 10-digit phone number");
     }
 
     try {
       setLoading(true);
-
+      // 💡 BACKEND NOTE: Pass intent so the backend knows not to block verified users
       const res = await API.post("/otp/send", {
         phone: "+91" + phone,
+        intent: isReset ? "reset" : "verification",
       });
 
       toast.success(res.data.message);
 
-      // ✅ DEV MODE AUTOFILL (only if backend sends otp)
       if (res.data.otp) {
         setOtp(res.data.otp.split(""));
       } else {
@@ -63,25 +53,22 @@ export default function MobileVerification() {
       }
 
       setOtpSent(true);
-
-      // ✅ AUTO FOCUS FIRST OTP BOX
-      setTimeout(() => {
-        inputsRef.current[0]?.focus();
-      }, 100);
-
-      // ✅ START TIMER
+      setTimeout(() => inputsRef.current[0]?.focus(), 100);
       setTimer(30);
     } catch (err) {
       const msg = err.response?.data?.message || "Failed to send OTP";
 
-      // ✅ already verified
+      // ✅ Fix: Only auto-redirect to dashboard if they are NOT resetting a password
       if (msg.toLowerCase().includes("already verified")) {
-        localStorage.setItem("isVerified", "true");
-
-        toast.success("Already verified ✅");
-
-        navigate("/dashboard");
-
+        if (!isReset) {
+          localStorage.setItem("isVerified", "true");
+          toast.success("Already verified ✅");
+          navigate("/dashboard");
+        } else {
+          toast.error(
+            "Account exists, but OTP failed to send. Check backend logic.",
+          );
+        }
         return;
       }
       toast.error(msg);
@@ -90,77 +77,54 @@ export default function MobileVerification() {
     }
   };
 
-  // =========================================
-  // 🔢 OTP INPUT CHANGE
-  // =========================================
   const handleChange = (element, index) => {
-    // ✅ ONLY NUMBERS
     if (isNaN(element.value)) return;
-
     const value = element.value.slice(-1);
-
     const newOtp = [...otp];
     newOtp[index] = value;
-
     setOtp(newOtp);
 
-    // ✅ AUTO NEXT FOCUS
     if (value && index < 5) {
       inputsRef.current[index + 1]?.focus();
     }
   };
 
-  // =========================================
-  // ⌫ BACKSPACE SUPPORT
-  // =========================================
   const handleKeyDown = (e, index) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputsRef.current[index - 1]?.focus();
     }
   };
 
-  // =========================================
-  // ✅ VERIFY OTP
-  // =========================================
   const handleVerify = async () => {
     const finalOtp = otp.join("");
 
-    // ✅ VALIDATION
     if (finalOtp.length !== 6) {
-      return toast.error("Enter valid OTP");
+      return toast.error("Enter valid 6-digit OTP");
     }
 
     try {
       setLoading(true);
-
       const res = await API.post("/otp/verify", {
         phone: "+91" + phone,
         otp: finalOtp,
+        intent: isReset ? "reset" : "verification",
       });
 
       toast.success(res.data.message);
 
-      // ✅ STORE VERIFIED FLAG
-      localStorage.setItem("isVerified", "true");
-
-      // ✅ UPDATE USER OBJECT ALSO
-      const user = JSON.parse(localStorage.getItem("user"));
-
-      if (user) {
-        user.isPhoneVerified = true;
-
-        localStorage.setItem("user", JSON.stringify(user));
-      }
-
-      // ✅ REDIRECT
-      const params = new URLSearchParams(window.location.search);
-
-      const isReset = params.get("reset");
-      // ✅ STORE VERIFIED PHONE
+      // ✅ Store verified phone securely for the next step
       localStorage.setItem("verifiedPhone", "+91" + phone);
-      if (isReset === "true") {
+
+      if (isReset) {
         navigate("/reset-password");
       } else {
+        localStorage.setItem("isVerified", "true");
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          user.isPhoneVerified = true;
+          localStorage.setItem("user", JSON.stringify(user));
+        }
         navigate("/dashboard");
       }
     } catch (err) {
@@ -173,16 +137,15 @@ export default function MobileVerification() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="bg-white p-6 rounded-2xl shadow w-full max-w-sm">
-        {/* TITLE */}
         <h2 className="text-xl font-semibold text-center mb-2">
-          Mobile Verification
+          {isReset ? "Reset Password" : "Mobile Verification"}
         </h2>
-
         <p className="text-sm text-gray-500 text-center mb-5">
-          Verify your mobile number to continue
+          {isReset
+            ? "Verify your number to reset your password"
+            : "Verify your mobile number to continue"}
         </p>
 
-        {/* 📱 PHONE INPUT */}
         <input
           type="text"
           placeholder="Enter phone number"
@@ -194,16 +157,14 @@ export default function MobileVerification() {
           className="w-full border p-2 rounded mb-3 outline-none focus:ring-2 focus:ring-pink-300"
         />
 
-        {/* 📩 SEND OTP BUTTON */}
         <button
           onClick={handleSendOTP}
           disabled={loading || timer > 0}
-          className={`w-full text-white py-2 rounded mb-4 transition
-            ${
-              timer > 0
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-pink-500 hover:bg-pink-600"
-            }`}
+          className={`w-full text-white py-2 rounded mb-4 transition ${
+            timer > 0
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-pink-500 hover:bg-pink-600"
+          }`}
         >
           {loading
             ? "Sending..."
@@ -212,14 +173,12 @@ export default function MobileVerification() {
               : "Send OTP"}
         </button>
 
-        {/* ℹ️ INFO */}
         {otpSent && (
           <p className="text-sm text-gray-500 text-center mb-4">
             OTP sent to +91 {phone}
           </p>
         )}
 
-        {/* 🔢 OTP INPUTS */}
         <div className="flex justify-between gap-2 mb-5">
           {otp.map((data, index) => (
             <input
@@ -236,12 +195,12 @@ export default function MobileVerification() {
           ))}
         </div>
 
-        {/* ✅ VERIFY BUTTON */}
         <button
           onClick={handleVerify}
           disabled={loading}
-          className={`w-full text-white py-2 rounded transition
-            ${loading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"}`}
+          className={`w-full text-white py-2 rounded transition ${
+            loading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
+          }`}
         >
           {loading ? "Verifying..." : "Verify Mobile"}
         </button>
