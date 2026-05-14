@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import MainLayout from "../src/components/MainLayout.jsx";
 import Register from "../src/pages/Register.jsx";
 import Login from "../src/pages/Login.jsx";
-import ResetPassword from "../src/pages/MobileVerification.jsx";
+import ResetPassword from "../src/pages/ResetPassword.jsx";
 import MobileVerification from "../src/pages/MobileVerification.jsx";
 import Dashboard from "../src/pages/Dashboard.jsx";
 import Matches from "../src/pages/Matches.jsx";
