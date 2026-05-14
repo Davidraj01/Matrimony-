@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import API from "../services/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,14 @@ export default function ResetPassword() {
   const [confirm, setConfirm] = useState("");
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const phone = localStorage.getItem("verifiedPhone");
+
+    if (!phone) {
+      navigate("/mobileverify?reset=true");
+    }
+  }, []);
 
   const handleReset = async () => {
     if (password !== confirm) {
