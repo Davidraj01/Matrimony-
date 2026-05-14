@@ -14,9 +14,13 @@ export default function MobileVerification() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const isReset = params.get("reset");
+
     const isVerified = localStorage.getItem("isVerified");
 
-    if (isVerified === "true") {
+    // ✅ Only redirect if NOT reset password flow
+    if (isVerified === "true" && isReset !== "true") {
       navigate("/dashboard");
     }
   }, []);
