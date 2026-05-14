@@ -157,8 +157,7 @@ export default function MobileVerification() {
 
       const isReset = params.get("reset");
       // ✅ STORE VERIFIED PHONE
-      localStorage.setItem("verifiedPhone", phone);
-
+      localStorage.setItem("verifiedPhone", "+91" + phone);
       if (isReset === "true") {
         navigate("/reset-password");
       } else {
