@@ -169,6 +169,15 @@ const Login = () => {
                 </button>
               </div>
             </div>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => navigate("/mobileverify?reset=true")}
+                className="text-sm text-pink-600 hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </div>
 
             {/* LOGIN BUTTON */}
             <button
