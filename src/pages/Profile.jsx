@@ -87,6 +87,9 @@ export default function Profile() {
   };
 
   const handleUpload = async (e) => {
+    if ((profile.photos?.length || 0) + e.target.files.length > 4) {
+      return toast.error("Maximum 4 photos allowed");
+    }
     const formData = new FormData();
     Array.from(e.target.files).forEach((f) => formData.append("photos", f));
     try {
