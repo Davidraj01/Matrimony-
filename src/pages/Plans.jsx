@@ -82,7 +82,17 @@ export default function Plans() {
       document
         .querySelectorAll(".razorpay-container")
         .forEach((e) => e.remove());
-      const rzp = new window.Razorpay(options);
+      console.log(window.navigator.userAgent);
+
+      const rzp = new window.Razorpay({
+        ...options,
+        modal: {
+          ondismiss: function () {
+            console.log("Payment popup closed");
+          },
+        },
+      });
+
       rzp.open();
     } catch (err) {
       toast.error("Payment failed");
