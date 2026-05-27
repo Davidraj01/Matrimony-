@@ -11,10 +11,12 @@ export default function Plans() {
 
   useEffect(() => {
     fetchPlans();
-
     fetchMyPlan();
   }, []);
 
+  // =========================
+  // FETCH PLANS
+  // =========================
   const fetchPlans = async () => {
     try {
       const data = await getPlans();
@@ -24,112 +26,192 @@ export default function Plans() {
     }
   };
 
+  // =========================
+  // FETCH CURRENT PLAN
+  // =========================
   const fetchMyPlan = async () => {
     try {
       const data = await getMyPlan();
+
       setCurrentPlan(data.subscription);
+
+      // ✅ SAVE LOCALLY
+      localStorage.setItem("plan", data.subscription);
+
+      // ✅ UPDATE USER OBJECT
+      const existingUser = JSON.parse(localStorage.getItem("user"));
+
+      if (existingUser) {
+        existingUser.subscription = data.subscription;
+        existingUser.isPremium = data.subscription === "premium";
+
+        localStorage.setItem("user", JSON.stringify(existingUser));
+      }
     } catch {
       toast.error("Failed to load current plan");
     }
   };
 
-  //  PAYMENT HANDLER
-  const handlePayment = async () => {
-    try {
-      // ✅ LOAD RAZORPAY SDK DYNAMICALLY
-      const loadRazorpay = () => {
-        return new Promise((resolve) => {
-          const script = document.createElement("script");
+  // =========================
+  // LOAD RAZORPAY SDK
+  // =========================
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      // ✅ already loaded
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
 
-          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      const script = document.createElement("script");
 
-          script.onload = () => {
-            resolve(true);
-          };
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
 
-          script.onerror = () => {
-            resolve(false);
-          };
-
-          document.body.appendChild(script);
-        });
+      script.onload = () => {
+        resolve(true);
       };
 
+      script.onerror = () => {
+        resolve(false);
+      };
+
+      document.body.appendChild(script);
+    });
+  };
+
+  // =========================
+  // PAYMENT HANDLER
+  // =========================
+  const handlePayment = async () => {
+    try {
+      setLoading(true);
+
+      // ✅ LOAD SDK
       const sdkLoaded = await loadRazorpay();
 
-      // ✅ SDK FAILED
       if (!sdkLoaded) {
         toast.error("Razorpay SDK failed to load");
         return;
       }
 
-      // ✅ CHECK WINDOW RAZORPAY
       if (!window.Razorpay) {
-        toast.error("Razorpay not available");
+        toast.error("Razorpay unavailable");
         return;
       }
-      const user = JSON.parse(localStorage.getItem("user"));
-      setLoading(true);
 
-      // 1️ Create order
+      const user = JSON.parse(localStorage.getItem("user")) || {};
+
+      // =========================
+      // CREATE ORDER
+      // =========================
       const { data } = await API.post("/payment/create-order");
+
       console.log("ORDER:", data);
-      // 2️ Razorpay config
+
+      // =========================
+      // OPTIONS
+      // =========================
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY,
+
         amount: data.amount,
+
         currency: "INR",
+
         order_id: data.id,
 
-        name: "Matrimony App",
+        name: "Royal Matrimony",
+
         description: "Premium Plan",
 
         prefill: {
-          name: user?.name,
-          email: user?.email,
-          contact: user?.phone,
-        },
-
-        handler: async function (response) {
-          try {
-            await API.post("/payment/verify", {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              planType: "premium",
-            });
-            localStorage.setItem("plan", "premium");
-            toast.success("Payment successful 🎉");
-            window.location.reload();
-            fetchMyPlan();
-          } catch (err) {
-            console.log(err.response?.data);
-            toast.error("Verification failed");
-          }
+          name: user?.name || "",
+          email: user?.email || "",
+          contact: user?.phone || "",
         },
 
         theme: {
           color: "#ec4899",
         },
-      };
-      console.log("RAZORPAY OPTIONS:", options);
-      //  remove old cached popup
-      document
-        .querySelectorAll(".razorpay-container")
-        .forEach((e) => e.remove());
-      console.log(window.navigator.userAgent);
 
-      const rzp = new window.Razorpay({
-        ...options,
         modal: {
           ondismiss: function () {
             console.log("Payment popup closed");
           },
         },
+
+        // =========================
+        // SUCCESS HANDLER
+        // =========================
+        handler: async function (response) {
+          try {
+            console.log("PAYMENT RESPONSE:", response);
+
+            const verifyRes = await API.post("/payment/verify", {
+              razorpay_order_id: response.razorpay_order_id,
+
+              razorpay_payment_id: response.razorpay_payment_id,
+
+              razorpay_signature: response.razorpay_signature,
+
+              planType: "premium",
+            });
+
+            console.log("VERIFY RESPONSE:", verifyRes.data);
+
+            // ✅ UPDATE LOCAL STATE
+            setCurrentPlan("premium");
+
+            // ✅ SAVE LOCALLY
+            localStorage.setItem("plan", "premium");
+
+            // ✅ UPDATE USER OBJECT
+            const existingUser = JSON.parse(localStorage.getItem("user"));
+
+            if (existingUser) {
+              existingUser.subscription = "premium";
+              existingUser.isPremium = true;
+
+              localStorage.setItem("user", JSON.stringify(existingUser));
+            }
+
+            toast.success("Payment successful 🎉");
+
+            // ✅ REFRESH PLAN FROM SERVER
+            await fetchMyPlan();
+          } catch (err) {
+            console.log("VERIFY ERROR:", err.response?.data || err);
+
+            toast.error(err.response?.data?.message || "Verification failed");
+          }
+        },
+      };
+
+      console.log("RAZORPAY OPTIONS:", options);
+
+      // ✅ REMOVE OLD POPUPS
+      document
+        .querySelectorAll(".razorpay-container")
+        .forEach((e) => e.remove());
+
+      // =========================
+      // OPEN PAYMENT
+      // =========================
+      const rzp = new window.Razorpay(options);
+
+      // =========================
+      // PAYMENT FAILED
+      // =========================
+      rzp.on("payment.failed", function (response) {
+        console.log("PAYMENT FAILED:", response.error);
+
+        toast.error(response.error.description || "Payment failed");
       });
 
       rzp.open();
     } catch (err) {
+      console.log("PAYMENT ERROR:", err);
+
       toast.error("Payment failed");
     } finally {
       setLoading(false);
@@ -143,6 +225,7 @@ export default function Plans() {
         className={`p-6 rounded-xl text-white bg-gradient-to-r ${COLORS.primary}`}
       >
         <h2 className="text-xl md:text-2xl font-bold">Choose Your Plan</h2>
+
         <p className="text-sm opacity-90 mt-1">
           Upgrade to unlock premium features
         </p>
@@ -152,7 +235,9 @@ export default function Plans() {
       <div className="grid sm:grid-cols-2 gap-6 mt-6 max-w-4xl mx-auto">
         {plans.map((plan) => {
           const isPremium = plan.name === "premium";
+
           const isCurrent = currentPlan === plan.name;
+
           const isPremiumUser = currentPlan === "premium";
 
           return (
@@ -189,19 +274,20 @@ export default function Plans() {
 
               {/* BUTTON */}
               {isCurrent ? (
-                <button className="bg-gray-300 w-full py-2 rounded">
+                <button className="bg-gray-300 w-full py-2 rounded mt-6">
                   Active Plan ✅
                 </button>
               ) : isPremiumUser && plan.name === "free" ? (
-                <button className="bg-gray-200 w-full py-2 rounded cursor-not-allowed">
+                <button className="bg-gray-200 w-full py-2 rounded mt-6 cursor-not-allowed">
                   Not Available
                 </button>
               ) : (
                 <button
+                  disabled={loading}
                   onClick={handlePayment}
                   className={`mt-6 w-full py-2 rounded text-white bg-gradient-to-r ${COLORS.primary}`}
                 >
-                  Upgrade Now
+                  {loading ? "Processing..." : "Upgrade Now"}
                 </button>
               )}
             </div>
