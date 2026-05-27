@@ -16,7 +16,6 @@ export default function Plans() {
   }, []);
 
   const fetchPlans = async () => {
-    a;
     try {
       const data = await getPlans();
       setPlans(data);
