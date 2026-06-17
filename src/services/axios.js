@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://matrimony-server-ungl.onrender.com/api",
+  baseURL: "https://mony.bazhilgroups.in/",
 });
 
 // Attach token automatically
