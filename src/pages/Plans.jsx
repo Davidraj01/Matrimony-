@@ -52,47 +52,13 @@ export default function Plans() {
     }
   };
 
-  // =========================
-  // LOAD RAZORPAY SDK
-  // =========================
-  const loadRazorpay = () => {
-    return new Promise((resolve) => {
-      // ✅ already loaded
-      if (window.Razorpay) {
-        resolve(true);
-        return;
-      }
-
-      const script = document.createElement("script");
-
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-
-      script.onload = () => {
-        resolve(true);
-      };
-
-      script.onerror = () => {
-        resolve(false);
-      };
-
-      document.body.appendChild(script);
-    });
-  };
-
+  
   // =========================
   // PAYMENT HANDLER
   // =========================
   const handlePayment = async () => {
     try {
       setLoading(true);
-
-      // ✅ LOAD SDK
-      const sdkLoaded = await loadRazorpay();
-
-      if (!sdkLoaded) {
-        toast.error("Razorpay SDK failed to load");
-        return;
-      }
 
       if (!window.Razorpay) {
         toast.error("Razorpay unavailable");
