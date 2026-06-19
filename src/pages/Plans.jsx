@@ -153,7 +153,6 @@ export default function Plans() {
         },
       };
 
-      console.log("RAZORPAY OPTIONS:", options);
       console.log("User Agent:", navigator.userAgent);
 
       // ✅ REMOVE OLD POPUPS
