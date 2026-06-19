@@ -165,6 +165,7 @@ export default function Plans() {
       // OPEN PAYMENT
       // =========================
       const rzp = new window.Razorpay(options);
+      console.log("Razorpay instance created");
 
       // =========================
       // PAYMENT FAILED
@@ -174,8 +175,9 @@ export default function Plans() {
 
         toast.error(response.error.description || "Payment failed");
       });
-
+      console.log("opening Razorpay...");
       rzp.open();
+      console.log("Razorpay open called");
     } catch (err) {
       console.log("PAYMENT ERROR:", err);
 
