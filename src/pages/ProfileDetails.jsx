@@ -55,7 +55,7 @@ export default function ProfileDetails() {
 
     const cleanPath = path.replace(/^\/+/, "");
 
-    return `https://matrimony-server-ungl.onrender.com/${cleanPath}`;
+    return `https://mony.bazhilgroups.in/${cleanPath}`;
   };
   return (
     <div className="p-4 max-w-5xl mx-auto">

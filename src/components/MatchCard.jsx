@@ -143,7 +143,7 @@ export default function MatchCard({ user, matchPercent = 75 }) {
   const getImageUrl = (img) => {
     if (!img) return "/profile_avatar.png";
 
-    return `https://matrimony-server-ungl.onrender.com/uploads/${img
+    return `https://mony.bazhilgroups.in/uploads/${img
       .replace("/uploads/", "")
       .replace("uploads/", "")}`;
   };

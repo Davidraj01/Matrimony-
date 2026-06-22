@@ -140,7 +140,7 @@ export default function Profile() {
 
     const cleanPath = path.replace(/^\/+/, "");
 
-    return `https://matrimony-server-ungl.onrender.com/${cleanPath}`;
+    return `https://mony.bazhilgroups.in/${cleanPath}`;
   };
 
   if (loading)
