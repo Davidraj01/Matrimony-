@@ -23,6 +23,7 @@ import ContactUs from "../src/pages/ContactUs.jsx";
 import RefundPolicy from "../src/pages/RefundPolicy.jsx";
 import PrivacyPolicy from "../src/pages/PrivacyPolicy.jsx";
 import TermsConditions from "../src/pages/TermsConditions.jsx";
+import PaymentTest from "../src/pages/PaymentTest.jsx";
 
 export default function UserRoutes() {
   return (
@@ -32,7 +33,7 @@ export default function UserRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/mobileverify" element={<MobileVerification />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/plans" element={<Plans />} />
+      
 
       {/*  PROTECTED ROUTES */}
       <Route element={<ProtectedRoute />}>
@@ -48,6 +49,8 @@ export default function UserRoutes() {
           
           <Route path="/chat/:userId" element={<Chat />} />
           <Route path="/views" element={<Views />} />
+          <Route path="/plans" element={<Plans />} />
+          <Route path="/payment-test" element={<PaymentTest />} />
 
           <Route path="/email-support" element={<EmailSupport />} />
           <Route path="/about-us" element={<AboutUs />} />
