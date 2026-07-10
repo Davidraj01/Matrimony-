@@ -78,7 +78,7 @@ export default function Plans() {
       // OPTIONS
       // =========================
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY,
+        key: "rzp_live_T4ZJrIbGj17pJK",
 
         amount: data.amount,
 
