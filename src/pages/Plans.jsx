@@ -70,21 +70,7 @@ export default function Plans() {
       // =========================
       // CREATE ORDER
       // =========================
-      // const { data } = await API.post("/payment/create-order");
-      const token = localStorage.getItem("token");
-
-const orderRes = await fetch(
-  "https://mony.bazhilgroups.in/api/payment/create-order",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-  }
-);
-
-const data = await orderRes.json();
+      const { data } = await API.post("/payment/create-order");
 
       console.log("ORDER:", data);
 
@@ -92,7 +78,7 @@ const data = await orderRes.json();
       // OPTIONS
       // =========================
       const options = {
-        key: "rzp_live_T4ZJrIbGj17pJK",
+        key: import.meta.env.VITE_RAZORPAY_KEY,
 
         amount: data.amount,
 
@@ -104,11 +90,11 @@ const data = await orderRes.json();
 
         description: "Premium Plan",
 
-        prefill: {
-          name: user?.name || "",
-          email: user?.email || "",
-          contact: user?.phone || "",
-        },
+        // prefill: {
+        //   name: user?.name || "",
+        //   email: user?.email || "",
+        //   contact: user?.phone || "",
+        // },
 
         theme: {
           color: "#ec4899",
@@ -127,21 +113,15 @@ const data = await orderRes.json();
           try {
             console.log("PAYMENT RESPONSE:", response);
 
-            await fetch(
-  "https://mony.bazhilgroups.in/api/payment/verify",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-    body: JSON.stringify({
-      razorpay_order_id: response.razorpay_order_id,
-      razorpay_payment_id: response.razorpay_payment_id,
-      razorpay_signature: response.razorpay_signature,
-    }),
-  }
-);
+            const verifyRes = await API.post("/payment/verify", {
+              razorpay_order_id: response.razorpay_order_id,
+
+              razorpay_payment_id: response.razorpay_payment_id,
+
+              razorpay_signature: response.razorpay_signature,
+
+              planType: "premium",
+            });
 
             console.log("VERIFY RESPONSE:", verifyRes.data);
 
