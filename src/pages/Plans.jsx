@@ -70,7 +70,21 @@ export default function Plans() {
       // =========================
       // CREATE ORDER
       // =========================
-      const { data } = await API.post("/payment/create-order");
+      // const { data } = await API.post("/payment/create-order");
+      const token = localStorage.getItem("token");
+
+const orderRes = await fetch(
+  "https://mony.bazhilgroups.in/api/payment/create-order",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+  }
+);
+
+const data = await orderRes.json();
 
       console.log("ORDER:", data);
 
@@ -113,15 +127,21 @@ export default function Plans() {
           try {
             console.log("PAYMENT RESPONSE:", response);
 
-            const verifyRes = await API.post("/payment/verify", {
-              razorpay_order_id: response.razorpay_order_id,
-
-              razorpay_payment_id: response.razorpay_payment_id,
-
-              razorpay_signature: response.razorpay_signature,
-
-              planType: "premium",
-            });
+            await fetch(
+  "https://mony.bazhilgroups.in/api/payment/verify",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify({
+      razorpay_order_id: response.razorpay_order_id,
+      razorpay_payment_id: response.razorpay_payment_id,
+      razorpay_signature: response.razorpay_signature,
+    }),
+  }
+);
 
             console.log("VERIFY RESPONSE:", verifyRes.data);
 
