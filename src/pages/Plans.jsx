@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { getPlans, getMyPlan } from "../services/planApi";
 import API from "../services/axios";
 import toast from "react-hot-toast";
@@ -8,10 +8,19 @@ export default function Plans() {
   const [plans, setPlans] = useState([]);
   const [currentPlan, setCurrentPlan] = useState(null);
   const [loading, setLoading] = useState(false);
+  const rzpInstanceRef = useRef(null); // ✅ tracks the live Razorpay instance
 
   useEffect(() => {
     fetchPlans();
     fetchMyPlan();
+
+    // ✅ clean up any open checkout on unmount, the SDK-safe way
+    return () => {
+      if (rzpInstanceRef.current) {
+        rzpInstanceRef.current.close();
+        rzpInstanceRef.current = null;
+      }
+    };
   }, []);
 
   // =========================
@@ -52,7 +61,6 @@ export default function Plans() {
     }
   };
 
-  
   // =========================
   // PAYMENT HANDLER
   // =========================
@@ -65,44 +73,36 @@ export default function Plans() {
         return;
       }
 
+      // ✅ close any stale/duplicate instance via the SDK's own API
+      if (rzpInstanceRef.current) {
+        rzpInstanceRef.current.close();
+        rzpInstanceRef.current = null;
+      }
+
       const user = JSON.parse(localStorage.getItem("user")) || {};
 
       // =========================
       // CREATE ORDER
       // =========================
-      // const { data } = await API.post("/payment/create-order");
-      const token = localStorage.getItem("token");
-
-const orderRes = await fetch(
-  "https://mony.bazhilgroups.in/api/payment/create-order",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-  }
-);
-
-const data = await orderRes.json();
+      const { data } = await API.post("/payment/create-order");
 
       console.log("ORDER:", data);
 
       // =========================
       // OPTIONS
       // =========================
-      // const options = {
-      //   key: import.meta.env.VITE_RAZORPAY_KEY,
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY,
 
-      //   amount: data.amount,
+        amount: data.amount,
 
-      //   currency: "INR",
+        currency: "INR",
 
-      //   order_id: data.id,
+        order_id: data.id,
 
-      //   name: "Royal Matrimony",
+        name: "Royal Matrimony",
 
-      //   description: "Premium Plan",
+        description: "Premium Plan",
 
         // prefill: {
         //   name: user?.name || "",
@@ -110,41 +110,16 @@ const data = await orderRes.json();
         //   contact: user?.phone || "",
         // },
 
-        // theme: {
-        //   color: "#ec4899",
-        // },
-
-        // modal: {
-        //   ondismiss: function () {
-        //     console.log("Payment popup closed");
-        //   },
-        // },
-      const options = {
-  key: "rzp_live_T4ZJrIbGj17pJK",
-  amount: data.amount,
-  currency: data.currency,
-  order_id: data.id,
-  name: "Royal Matrimony",
-  description: "Premium Plan",
-
-  handler: async function (response) {
-    console.log("PAYMENT SUCCESS:", response);
-
-    const verifyResponse = await fetch(
-      "https://mony.bazhilgroups.in/api/payment/verify",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
+        theme: {
+          color: "#ec4899",
         },
-        body: JSON.stringify(response),
-      }
-    );
 
-    console.log(await verifyResponse.json());
-  },
-};
+        modal: {
+          ondismiss: function () {
+            console.log("Payment popup closed");
+            rzpInstanceRef.current = null; // ✅ clear ref when user dismisses it
+          },
+        },
 
         // =========================
         // SUCCESS HANDLER
@@ -153,32 +128,17 @@ const data = await orderRes.json();
           try {
             console.log("PAYMENT RESPONSE:", response);
 
-            // const verifyRes = await API.post("/payment/verify", {
-            //   razorpay_order_id: response.razorpay_order_id,
+            const verifyRes = await API.post("/payment/verify", {
+              razorpay_order_id: response.razorpay_order_id,
 
-            //   razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_payment_id: response.razorpay_payment_id,
 
-            //   razorpay_signature: response.razorpay_signature,
+              razorpay_signature: response.razorpay_signature,
 
-            //   planType: "premium",
-            // });
+              planType: "premium",
+            });
 
-            // console.log("VERIFY RESPONSE:", verifyRes.data);
-            await fetch(
-  "https://mony.bazhilgroups.in/api/payment/verify",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-    body: JSON.stringify({
-      razorpay_order_id: response.razorpay_order_id,
-      razorpay_payment_id: response.razorpay_payment_id,
-      razorpay_signature: response.razorpay_signature,
-    }),
-  }
-);
+            console.log("VERIFY RESPONSE:", verifyRes.data);
 
             // ✅ UPDATE LOCAL STATE
             setCurrentPlan("premium");
@@ -204,21 +164,26 @@ const data = await orderRes.json();
             console.log("VERIFY ERROR:", err.response?.data || err);
 
             toast.error(err.response?.data?.message || "Verification failed");
+          } finally {
+            rzpInstanceRef.current = null;
           }
         },
       };
 
       console.log("User Agent:", navigator.userAgent);
 
-      // ✅ REMOVE OLD POPUPS
-      document
-        .querySelectorAll(".razorpay-container")
-        .forEach((e) => e.remove());
+      // ✅ Note: we no longer manually remove ".razorpay-container" nodes here.
+      // That was deleting a DOM element Razorpay's SDK manages internally,
+      // which corrupted its state and caused a false
+      // "This browser is not supported" alert on the next open().
+      // Closing the tracked instance above (rzpInstanceRef.current.close())
+      // is the safe replacement for preventing duplicate popups.
 
       // =========================
       // OPEN PAYMENT
       // =========================
       const rzp = new window.Razorpay(options);
+      rzpInstanceRef.current = rzp; // ✅ store instance instead of tearing down DOM
       console.log("Razorpay instance created");
 
       // =========================
