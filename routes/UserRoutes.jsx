@@ -23,7 +23,7 @@ import ContactUs from "../src/pages/ContactUs.jsx";
 import RefundPolicy from "../src/pages/RefundPolicy.jsx";
 import PrivacyPolicy from "../src/pages/PrivacyPolicy.jsx";
 import TermsConditions from "../src/pages/TermsConditions.jsx";
-import PaymentTest from "../src/pages/PaymentTest.jsx";
+// import PaymentTest from "../src/pages/PaymentTest.jsx";
 
 export default function UserRoutes() {
   return (
