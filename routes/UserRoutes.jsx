@@ -50,7 +50,7 @@ export default function UserRoutes() {
           <Route path="/chat/:userId" element={<Chat />} />
           <Route path="/views" element={<Views />} />
           <Route path="/plans" element={<Plans />} />
-          <Route path="/payment-test" element={<PaymentTest />} />
+          {/* <Route path="/payment-test" element={<PaymentTest />} /> */}
 
           <Route path="/email-support" element={<EmailSupport />} />
           <Route path="/about-us" element={<AboutUs />} />
